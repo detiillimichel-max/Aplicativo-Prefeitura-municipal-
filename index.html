@@ -1,199 +1,313 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>OIO GOV</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Comunicação Interna - Prefeitura</title>
+  
+  <!-- Importando o Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #eef1f5;
+    }
 
-<style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:system-ui;background:#0f172a;color:#e2e8f0}
+    header {
+      background: #0d47a1;
+      color: white;
+      padding: 15px;
+      text-align: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
 
-/* LOGIN */
-#login{
-  position:fixed;inset:0;
-  display:flex;align-items:center;justify-content:center;
-  background:#020617;z-index:999;
-}
-.login-box{
-  background:#1e293b;padding:30px;border-radius:12px;
-  display:flex;flex-direction:column;gap:10px;width:250px;
-}
-.login-box input{padding:10px;border-radius:8px;border:none}
-.login-box button{padding:10px;background:#2563eb;border:none;color:white;border-radius:8px}
+    header h1 { margin: 0; font-size: 24px; }
+    header p { margin: 5px 0 0 0; font-size: 14px; opacity: 0.8; }
 
-/* APP */
-.app{display:grid;grid-template-columns:70px 250px 1fr;height:100vh}
+    .container {
+      display: flex;
+      height: calc(100vh - 80px);
+    }
 
-/* SIDEBAR */
-.sidebar-icons{background:#020617;display:flex;flex-direction:column;align-items:center;padding-top:10px}
-.icon{padding:14px;margin:6px 0;border-radius:10px;opacity:.7}
-.icon.active,.icon:hover{background:#1e293b;opacity:1}
+    /* Sidebar (Secretarias) */
+    aside {
+      width: 250px;
+      background: #1c1e21;
+      color: white;
+      overflow-y: auto;
+    }
 
-/* SECRETARIAS */
-.sidebar-channels{background:#020617;padding:10px;border-right:1px solid #1e293b;overflow:auto}
-.channel{padding:10px;border-radius:8px;cursor:pointer}
-.channel:hover{background:#1e293b}
-.channel.active{background:#2563eb}
+    .secretaria {
+      padding: 15px;
+      border-bottom: 1px solid #333;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
 
-/* MAIN */
-.main{display:flex;flex-direction:column}
-.chat-header{padding:15px;border-bottom:1px solid #1e293b;font-weight:bold}
-.chat-box{flex:1;padding:15px;overflow:auto}
+    .secretaria:hover, .secretaria.ativa {
+      background: #1976d2;
+      font-weight: bold;
+    }
 
-/* MSG */
-.msg{max-width:70%;padding:10px;margin-bottom:10px;border-radius:10px;background:#1e293b}
-.msg.user{background:#2563eb;margin-left:auto}
+    /* Área do Chat */
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: #fff;
+    }
 
-/* INPUT */
-.input-area{display:flex;padding:10px;border-top:1px solid #1e293b}
-input{flex:1;padding:10px;border-radius:8px;border:none;background:#020617;color:white}
-button{margin-left:10px;padding:10px;background:#2563eb;border:none;color:white;border-radius:8px}
-</style>
+    #titulo-chat {
+      padding: 15px;
+      margin: 0;
+      background: #f8f9fa;
+      border-bottom: 1px solid #ddd;
+      color: #333;
+    }
+
+    #chat {
+      flex: 1;
+      padding: 15px;
+      overflow-y: auto;
+      background: #eef1f5;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .msg {
+      background: white;
+      padding: 10px 15px;
+      border-radius: 8px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+      max-width: 80%;
+      align-self: flex-start;
+    }
+
+    .msg-autor {
+      font-size: 11px;
+      color: #1976d2;
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+
+    .minha-msg {
+      background: #dcf8c6;
+      align-self: flex-end;
+    }
+
+    /* Área de Digitação */
+    .input-area {
+      display: flex;
+      padding: 15px;
+      background: #fff;
+      border-top: 1px solid #ddd;
+    }
+
+    .input-area input {
+      flex: 1;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 14px;
+      outline: none;
+    }
+
+    .input-area button {
+      padding: 12px 20px;
+      margin-left: 10px;
+      background: #1976d2;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .input-area button:hover {
+      background: #0d47a1;
+    }
+  </style>
 </head>
-
 <body>
 
-<div id="login">
-  <div class="login-box">
-    <h3>Login Institucional</h3>
-    <input id="email" placeholder="Email">
-    <input id="senha" type="password" placeholder="Senha">
-    <button onclick="login()">Entrar</button>
-  </div>
-</div>
+<header>
+  <h1>🏛️ Comunicação Interna</h1>
+  <p>Prefeitura Municipal | Logado como: <strong id="nome-usuario"></strong></p>
+</header>
 
-<div class="app">
+<div class="container">
+  <!-- LISTA DE SECRETARIAS -->
+  <aside id="lista-secretarias"></aside>
 
-  <div class="sidebar-icons">
-    <div class="icon active">🏛️</div>
-    <div class="icon">💬</div>
-  </div>
-
-  <div class="sidebar-channels" id="lista"></div>
-
-  <div class="main">
-    <div class="chat-header" id="titulo">Selecione uma secretaria</div>
-    <div class="chat-box" id="chat"></div>
-
-    <div class="input-area">
-      <input id="msg" placeholder="Mensagem institucional...">
-      <button onclick="enviar()">Enviar</button>
+  <!-- CHAT -->
+  <main>
+    <h2 id="titulo-chat">Selecione um departamento ao lado</h2>
+    <div id="chat">
+        <p style="text-align:center; color:#888; margin-top: 20px;">Bem-vindo ao sistema de comunicação da Prefeitura.</p>
     </div>
-  </div>
 
+    <div class="input-area" id="area-digitar" style="display: none;">
+      <input type="text" id="mensagem" placeholder="Digite sua mensagem para a secretaria...">
+      <button onclick="enviarMensagem()">Enviar</button>
+    </div>
+  </main>
 </div>
 
 <script>
+  // ==========================================
+  // 1. CONFIGURAÇÃO DO BANCO DE DADOS
+  // ==========================================
+  const SUPABASE_URL = 'COLOQUE_AQUI_SUA_URL_DO_SUPABASE';
+  const SUPABASE_KEY = 'COLOQUE_AQUI_SUA_CHAVE_ANON_DO_SUPABASE';
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// 🔐 SUA CONFIGURAÇÃO
-const SUPABASE_URL = 'https://uqdwtzlkqaosnweyoyit.supabase.co'
-const SUPABASE_KEY = 'sb_publishable_uafBQD1aJ3w8_eq4meOsNQ_wzk8TwhA'
-
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-// SECRETARIAS
-const secretarias = [
-"Saneamento","Finanças","Obras","Saúde","Educação",
-"Esportes","Infraestrutura","Marketing","Segurança",
-"Lazer e Cultura","RH","Gabinete","Recursos Humanos",
-"Ação Social","Compras"
-];
-
-let atual = null;
-let user = null;
-
-// LISTA
-const lista = document.getElementById("lista");
-
-secretarias.forEach(sec=>{
-  const div = document.createElement("div");
-  div.className="channel";
-  div.innerText=sec;
-  div.onclick=()=>abrir(sec,div);
-  lista.appendChild(div);
-});
-
-// LOGIN
-async function login(){
-  const email = document.getElementById("email").value;
-  const senha = document.getElementById("senha").value;
-
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email, password: senha
-  });
-
-  if(error){
-    alert("Erro no login");
-  } else {
-    user = data.user;
-    document.getElementById("login").style.display="none";
-
-    setTimeout(()=>{
-      document.querySelector(".channel").click();
-    },200);
+  // ==========================================
+  // 2. IDENTIFICAÇÃO DO FUNCIONÁRIO
+  // ==========================================
+  let meuNome = localStorage.getItem('prefeitura_nome_usuario');
+  if (!meuNome) {
+      meuNome = prompt("Qual o seu nome e cargo? (Ex: João - RH)");
+      if (!meuNome) meuNome = "Funcionário Anônimo";
+      localStorage.setItem('prefeitura_nome_usuario', meuNome);
   }
-}
+  document.getElementById('nome-usuario').innerText = meuNome;
 
-// ABRIR
-function abrir(sec, el){
-  atual = sec;
+  // ==========================================
+  // 3. VARIÁVEIS DO SISTEMA
+  // ==========================================
+  const secretarias = [
+    "Saneamento", "Finanças", "Obras", "Saúde", "Educação", 
+    "Esportes", "Infraestrutura", "Marketing", "Segurança", 
+    "Lazer e Cultura", "Gabinete", "RH / Ação Social"
+  ];
+  let secretariaAtual = null;
+  let inscricaoTempoReal = null; // Para atualizar mensagens na hora
 
-  document.querySelectorAll(".channel").forEach(c=>c.classList.remove("active"));
-  el.classList.add("active");
-
-  document.getElementById("titulo").innerText = sec;
-
-  carregar();
-}
-
-// ENVIAR
-async function enviar(){
-  const input = document.getElementById("msg");
-
-  if(!input.value || !atual) return;
-
-  await supabase.from("mensagens").insert({
-    secretaria: atual,
-    texto: input.value,
-    user_id: user.id
+  // ==========================================
+  // 4. RENDERIZAR MENU LATERAL
+  // ==========================================
+  const lista = document.getElementById("lista-secretarias");
+  secretarias.forEach(sec => {
+    const div = document.createElement("div");
+    div.className = "secretaria";
+    div.innerText = sec;
+    div.onclick = () => abrirChat(sec, div);
+    lista.appendChild(div);
   });
 
-  input.value="";
-}
+  // ==========================================
+  // 5. ABRIR CHAT DE UMA SECRETARIA
+  // ==========================================
+  async function abrirChat(nomeSecretaria, elementoClicado) {
+    secretariaAtual = nomeSecretaria;
+    document.getElementById("titulo-chat").innerText = "Secretaria de " + nomeSecretaria;
+    document.getElementById("area-digitar").style.display = "flex";
 
-// CARREGAR
-async function carregar(){
-  const { data } = await supabase
-    .from("mensagens")
-    .select("*")
-    .eq("secretaria", atual)
-    .order("created_at");
+    // Destaca a secretaria no menu
+    document.querySelectorAll('.secretaria').forEach(el => el.classList.remove('ativa'));
+    if (elementoClicado) elementoClicado.classList.add('ativa');
 
-  const chat = document.getElementById("chat");
-  chat.innerHTML="";
+    carregarHistorico();
+    configurarTempoReal();
+  }
 
-  data.forEach(m=>{
-    chat.innerHTML += `
-      <div class="msg ${m.user_id === user.id ? 'user':''}">
-        ${m.texto}
-      </div>
+  // ==========================================
+  // 6. BUSCAR MENSAGENS NO BANCO
+  // ==========================================
+  async function carregarHistorico() {
+    const chat = document.getElementById("chat");
+    chat.innerHTML = "<p style='text-align:center;'>Carregando mensagens...</p>";
+
+    // Busca no Supabase as mensagens onde o destino é a secretaria atual
+    const { data, error } = await supabase
+      .from('messages')
+      .select('*')
+      .eq('receiver_id', secretariaAtual) 
+      .order('created_at', { ascending: true });
+
+    if (error) {
+        console.error("Erro:", error);
+        chat.innerHTML = "<p style='color:red;'>Erro ao carregar banco de dados.</p>";
+        return;
+    }
+
+    chat.innerHTML = "";
+    if (data.length === 0) {
+        chat.innerHTML = "<p style='text-align:center; color:#888;'>Nenhuma mensagem enviada para este departamento ainda.</p>";
+    } else {
+        data.forEach(msg => desenharMensagemNaTela(msg));
+    }
+  }
+
+  // ==========================================
+  // 7. ENVIAR MENSAGEM
+  // ==========================================
+  async function enviarMensagem() {
+    const input = document.getElementById("mensagem");
+    const texto = input.value.trim();
+
+    if (!texto || !secretariaAtual) return;
+
+    input.value = ""; // Limpa o campo rápido para o usuário
+
+    // Salva no Supabase
+    const { error } = await supabase
+      .from('messages')
+      .insert([{ 
+          sender_id: meuNome, // O nome de quem enviou
+          receiver_id: secretariaAtual, // A sala da secretaria
+          content: texto 
+      }]);
+
+    if (error) alert("Falha ao enviar: " + error.message);
+  }
+
+  // ==========================================
+  // 8. OUVIR NOVAS MENSAGENS (TEMPO REAL)
+  // ==========================================
+  function configurarTempoReal() {
+    if (inscricaoTempoReal) supabase.removeChannel(inscricaoTempoReal);
+
+    inscricaoTempoReal = supabase
+      .channel('chat_prefeitura')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
+          const novaMsg = payload.new;
+          // Se a mensagem for pra aba que estou olhando agora, mostra na tela
+          if (novaMsg.receiver_id === secretariaAtual) {
+              // Remove aviso de "Nenhuma mensagem" se existir
+              if(document.querySelector('#chat p')) document.querySelector('#chat p').remove();
+              desenharMensagemNaTela(novaMsg);
+          }
+      }).subscribe();
+  }
+
+  // ==========================================
+  // 9. FUNÇÃO AUXILIAR: DESENHAR MENSAGEM
+  // ==========================================
+  function desenharMensagemNaTela(msg) {
+    const chat = document.getElementById("chat");
+    const div = document.createElement("div");
+    
+    // Verifica se a mensagem foi enviada por mim
+    const ehMinha = msg.sender_id === meuNome;
+    div.className = "msg " + (ehMinha ? "minha-msg" : "");
+
+    div.innerHTML = `
+      <div class="msg-autor">${msg.sender_id}</div>
+      <div>${msg.content}</div>
     `;
+
+    chat.appendChild(div);
+    chat.scrollTop = chat.scrollHeight; // Rola pro final automaticamente
+  }
+
+  // Permitir envio com a tecla "Enter"
+  document.getElementById("mensagem").addEventListener("keypress", function(event) {
+    if (event.key === "Enter") enviarMensagem();
   });
-}
-
-// TEMPO REAL
-supabase
-.channel('chat')
-.on('postgres_changes',
-  { event:'*', schema:'public', table:'mensagens' },
-  ()=>carregar()
-)
-.subscribe();
-
 </script>
-
 </body>
 </html>
