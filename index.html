@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OIO GOV</title>
+
+<style>
+
+/* RESET */
+* { margin:0; padding:0; box-sizing:border-box; }
+
+/* BASE */
+body {
+  font-family: system-ui, Arial;
+  background:#0f172a;
+  color:#e2e8f0;
+}
+
+/* LAYOUT */
+.app {
+  display:grid;
+  grid-template-columns:70px 250px 1fr;
+  height:100vh;
+}
+
+/* SIDEBAR ÍCONES */
+.sidebar-icons {
+  background:#020617;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding-top:10px;
+}
+
+.icon {
+  padding:14px;
+  margin:6px 0;
+  border-radius:10px;
+  cursor:pointer;
+  opacity:0.7;
+}
+
+.icon:hover, .icon.active {
+  background:#1e293b;
+  opacity:1;
+}
+
+/* SECRETARIAS */
+.sidebar-channels {
+  background:#020617;
+  padding:10px;
+  border-right:1px solid #1e293b;
+  overflow-y:auto;
+}
+
+.channel {
+  padding:10px;
+  border-radius:8px;
+  cursor:pointer;
+  color:#cbd5f5;
+}
+
+.channel:hover { background:#1e293b; }
+
+.channel.active {
+  background:#2563eb;
+  color:#fff;
+}
+
+/* MAIN */
+.main {
+  display:flex;
+  flex-direction:column;
+}
+
+/* HEADER */
+.chat-header {
+  padding:15px;
+  border-bottom:1px solid #1e293b;
+  font-weight:600;
+}
+
+/* CHAT */
+.chat-box {
+  flex:1;
+  padding:15px;
+  overflow-y:auto;
+}
+
+/* MSG */
+.msg {
+  max-width:70%;
+  padding:10px 14px;
+  margin-bottom:10px;
+  border-radius:12px;
+  background:#1e293b;
+}
+
+.msg.user {
+  background:#2563eb;
+  margin-left:auto;
+}
+
+/* INPUT */
+.input-area {
+  display:flex;
+  padding:10px;
+  border-top:1px solid #1e293b;
+}
+
+input {
+  flex:1;
+  padding:10px;
+  border-radius:10px;
+  border:none;
+  background:#020617;
+  color:white;
+}
+
+button {
+  margin-left:10px;
+  padding:10px 16px;
+  background:#2563eb;
+  border:none;
+  border-radius:10px;
+  color:white;
+  cursor:pointer;
+}
+
+/* VIDEO CARD */
+.video-card {
+  background:#1e293b;
+  padding:10px;
+  border-radius:10px;
+  margin-bottom:10px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+  <!-- ICONES -->
+  <div class="sidebar-icons">
+    <div class="icon active">🏛️</div>
+    <div class="icon">💬</div>
+    <div class="icon">🎥</div>
+  </div>
+
+  <!-- SECRETARIAS -->
+  <div class="sidebar-channels" id="lista"></div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <div class="chat-header" id="titulo">
+      Selecione uma secretaria
+    </div>
+
+    <div class="chat-box" id="chat"></div>
+
+    <div class="input-area">
+      <input id="msg" placeholder="Mensagem institucional...">
+      <button onclick="enviar()">Enviar</button>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+
+// SECRETARIAS
+const secretarias = [
+"Saneamento","Finanças","Obras","Saúde","Educação",
+"Esportes","Infraestrutura","Marketing","Segurança",
+"Lazer e Cultura","RH","Gabinete","Recursos Humanos",
+"Ação Social","Compras"
+];
+
+let atual = null;
+const mensagens = {};
+
+// RENDER SECRETARIAS
+const lista = document.getElementById("lista");
+
+secretarias.forEach(sec => {
+  const div = document.createElement("div");
+  div.className = "channel";
+  div.innerText = sec;
+
+  div.onclick = () => abrir(sec, div);
+
+  lista.appendChild(div);
+});
+
+// ABRIR
+function abrir(sec, el){
+  atual = sec;
+
+  document.querySelectorAll(".channel").forEach(c=>c.classList.remove("active"));
+  el.classList.add("active");
+
+  document.getElementById("titulo").innerText = sec;
+
+  if(!mensagens[sec]) mensagens[sec] = [];
+
+  render();
+}
+
+// RENDER CHAT
+function render(){
+  const chat = document.getElementById("chat");
+  chat.innerHTML = "";
+
+  mensagens[atual].forEach(m=>{
+    if(m.tipo === "video"){
+      chat.innerHTML += `
+        <div class="video-card">
+          <video controls width="100%">
+            <source src="${m.src}">
+          </video>
+          <p>${m.texto}</p>
+        </div>
+      `;
+    } else {
+      chat.innerHTML += `
+        <div class="msg ${m.user ? 'user':''}">
+          ${m.texto}
+        </div>
+      `;
+    }
+  });
+}
+
+// ENVIAR TEXTO
+function enviar(){
+  const input = document.getElementById("msg");
+
+  if(!input.value || !atual) return;
+
+  mensagens[atual].push({
+    texto: input.value,
+    user: true
+  });
+
+  input.value = "";
+  render();
+}
+
+// EXEMPLO DE VIDEO (já carregado)
+mensagens["Marketing"] = [
+  {
+    tipo:"video",
+    src:"https://www.w3schools.com/html/mov_bbb.mp4",
+    texto:"Vídeo institucional"
+  }
+];
+
+</script>
+
+</body>
+</html>
