@@ -2,19 +2,100 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OIO GOV - Oficial</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>OIO GOV — Prefeitura Municipal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="assets/style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-    <div class="app-grid">
-        <aside class="sidebar">
-            <div class="logo">🏛️ OIO GOV</div>
-            <div id="secList"></div>
-        </aside>
-        <main id="chatView"></main>
+
+    <!-- TELA DE LOGIN -->
+    <div id="login-screen">
+        <div class="login-box">
+            <div class="gov-logo">🏛️</div>
+            <h2>OIO GOV</h2>
+            <p>Prefeitura Municipal</p>
+            <input type="text" id="login-nome" placeholder="Seu nome completo" autocomplete="off">
+            <input type="tel" id="login-senha" placeholder="Senha numérica" maxlength="6" pattern="[0-9]*">
+            <button id="btn-entrar" onclick="window.govLogin()">ACESSAR</button>
+        </div>
     </div>
+
+    <!-- APP PRINCIPAL -->
+    <div id="app-screen" class="hidden">
+
+        <!-- SIDEBAR DE SECRETARIAS -->
+        <div id="sidebar">
+            <div class="sidebar-header">
+                <span>🏛️</span>
+                <div>
+                    <strong>OIO GOV</strong>
+                    <small id="nome-usuario"></small>
+                </div>
+            </div>
+            <div id="lista-secretarias"></div>
+        </div>
+
+        <!-- ÁREA PRINCIPAL -->
+        <div id="main-area">
+
+            <!-- TELA INICIAL -->
+            <div id="tela-inicial">
+                <div class="tela-inicial-conteudo">
+                    <span style="font-size:60px;">🏛️</span>
+                    <h2>Bem-vindo ao OIO GOV</h2>
+                    <p>Selecione uma secretaria para iniciar</p>
+                </div>
+            </div>
+
+            <!-- TELA DE CHAT -->
+            <div id="tela-chat" class="hidden">
+
+                <!-- HEADER -->
+                <div class="chat-header">
+                    <button class="btn-voltar" onclick="window.govFecharChat()">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <div class="chat-header-info">
+                        <span id="chat-icone" style="font-size:20px;"></span>
+                        <div>
+                            <strong id="chat-titulo"></strong>
+                            <small>Prefeitura Municipal</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MENSAGENS -->
+                <div id="chat-mensagens"></div>
+
+                <!-- INPUT -->
+                <div class="chat-input-area">
+                    <div id="arquivo-preview" class="hidden">
+                        <i class="fas fa-paperclip"></i>
+                        <span id="arquivo-nome"></span>
+                        <button onclick="window.govCancelarArquivo()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="input-row">
+                        <label class="btn-anexo">
+                            <i class="fas fa-paperclip"></i>
+                            <input type="file" id="gov-arquivo" 
+                                accept="image/*,video/*,audio/*,.pdf,.doc,.docx"
+                                onchange="window.govPreviewArquivo(this)">
+                        </label>
+                        <input type="text" id="gov-input" placeholder="Digite sua mensagem...">
+                        <button class="btn-enviar" onclick="window.govEnviar()">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
     <script type="module" src="assets/app.js"></script>
 </body>
 </html>
