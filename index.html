@@ -3,53 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OIO GOV - Gestão Municipal</title>
-    <!-- Link para o CSS na pasta assets -->
+    <title>OIO GOV - Oficial</title>
     <link rel="stylesheet" href="assets/style.css">
-    <!-- SDK do Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-    <div class="app-container">
-        <!-- Sidebar de Navegação -->
-        <aside class="sidebar-nav">
-            <div class="nav-item active" onclick="switchTab('chat', this)">🏛️</div>
-            <div class="nav-item" onclick="switchTab('feed', this)">📰</div>
+    <div class="app-grid">
+        <aside class="sidebar">
+            <div class="logo">🏛️ OIO GOV</div>
+            <div id="secList"></div>
         </aside>
-
-        <!-- Menu de Secretarias -->
-        <nav class="sidebar-list" id="sec-list">
-            <div class="list-header">Secretarias</div>
-            <!-- Gerado via JS -->
-        </nav>
-
-        <!-- Painel Principal -->
-        <main class="content-area">
-            <!-- Tela: Mensagens -->
-            <section id="view-chat" class="view active">
-                <div class="view-header"><h2 id="current-sec">Selecione um Setor</h2></div>
-                <div class="chat-log" id="chat-display"></div>
-                <div class="chat-input-bar" id="input-group" style="display:none">
-                    <input type="text" id="userInput" placeholder="Escreva um comunicado...">
-                    <button onclick="sendData()">Enviar</button>
-                </div>
-            </section>
-
-            <!-- Tela: Feed -->
-            <section id="view-feed" class="view">
-                <div class="view-header"><h2>Comunicados Oficiais</h2></div>
-                <div class="feed-container">
-                    <div class="feed-composer">
-                        <textarea id="feedText" placeholder="O que deseja publicar hoje?"></textarea>
-                        <button onclick="publishPost()">Publicar no Mural</button>
-                    </div>
-                    <div id="mural-list"></div>
-                </div>
-            </section>
-        </main>
+        <main id="chatView"></main>
     </div>
-
-    <!-- Link para o JS na pasta assets -->
-    <script src="assets/script.js"></script>
+    <script type="module" src="assets/app.js"></script>
 </body>
 </html>
