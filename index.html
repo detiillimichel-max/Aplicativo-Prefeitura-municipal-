@@ -184,9 +184,9 @@ button {
 </div>
 
 <script>
-// --- CONFIGURAÇÃO SUPABASE ---
-const SUPABASE_URL = 'https://uqdwtzlkqaosnweyoyit.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_uafBQD1aJ3w8_eq4meOsNQ_wzk8TwhA';
+// --- CONFIGURAÇÃO SUPABASE ATUALIZADA (PROJETO OIO-PREFEITURA) ---
+const SUPABASE_URL = 'https://svqocghixhrpqaxucubn.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_lE2ZPtlhTh6OWr3S9Fb3rg_rLXHjkHH';
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const secretarias = [
@@ -227,7 +227,7 @@ async function abrirSecretaria(sec, el) {
     
     // Carregar mensagens do Supabase
     const { data } = await supabase.from('mensagens').select('*').eq('secretaria', sec).order('created_at', { ascending: true });
-    renderChat(data);
+    if(data) renderChat(data);
     
     // Escutar em tempo real
     supabase.channel('mensagens').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'mensagens' }, payload => {
@@ -237,7 +237,7 @@ async function abrirSecretaria(sec, el) {
 
 async function carregarNovasMensagens() {
     const { data } = await supabase.from('mensagens').select('*').eq('secretaria', secretariaAtual).order('created_at', { ascending: true });
-    renderChat(data);
+    if(data) renderChat(data);
 }
 
 function renderChat(msgs) {
@@ -270,29 +270,33 @@ async function carregarFeed() {
     const { data } = await supabase.from('posts').select('*').order('created_at', { ascending: false });
     const lista = document.getElementById("feed-lista");
     lista.innerHTML = "";
-    data.forEach(p => {
-        lista.innerHTML += `
-            <div class="post">
-                <b>${p.autor}</b>
-                <p style="margin-top:10px">${p.texto}</p>
-                <div class="actions">
-                    <button onclick="like('${p.id}')">❤️ ${p.likes ? p.likes.length : 0}</button>
-                    <button onclick="comentar('${p.id}')">💬</button>
+    if(data) {
+        data.forEach(p => {
+            lista.innerHTML += `
+                <div class="post">
+                    <b>${p.autor}</b>
+                    <p style="margin-top:10px">${p.texto}</p>
+                    <div class="actions">
+                        <button onclick="like('${p.id}')">❤️ ${p.likes ? p.likes.length : 0}</button>
+                        <button onclick="comentar('${p.id}')">💬</button>
+                    </div>
+                    <div id="c-${p.id}"></div>
                 </div>
-                <div id="c-${p.id}"></div>
-            </div>
-        `;
-        carregarComentarios(p.id);
-    });
+            `;
+            carregarComentarios(p.id);
+        });
+    }
 }
 
 async function carregarComentarios(postId) {
     const { data } = await supabase.from('comments').select('*').eq('post_id', postId);
     const div = document.getElementById("c-"+postId);
     div.innerHTML = "";
-    data.forEach(c => {
-        div.innerHTML += `<div class="comment"><b>${c.autor}:</b> ${c.texto}</div>`;
-    });
+    if(data) {
+        data.forEach(c => {
+            div.innerHTML += `<div class="comment"><b>${c.autor}:</b> ${c.texto}</div>`;
+        });
+    }
 }
 
 async function comentar(postId) {
@@ -304,12 +308,13 @@ async function comentar(postId) {
 }
 
 async function like(postId) {
-    // Lógica simplificada de like
     const { data } = await supabase.from('posts').select('likes').eq('id', postId).single();
-    let novosLikes = data.likes || [];
-    novosLikes.push(meuNome);
-    await supabase.from('posts').update({ likes: novosLikes }).eq('id', postId);
-    carregarFeed();
+    if(data) {
+        let novosLikes = data.likes || [];
+        novosLikes.push(meuNome);
+        await supabase.from('posts').update({ likes: novosLikes }).eq('id', postId);
+        carregarFeed();
+    }
 }
 
 // Iniciar
